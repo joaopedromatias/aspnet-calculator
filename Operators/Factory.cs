@@ -1,5 +1,5 @@
 class OperatorFactory { 
-    public static Operator makeOperator(string? operatorInput) {
+    public static Operator makeOperator(string operatorInput) {
         return operatorInput switch
         {
             "add" => new AddOperator(),
