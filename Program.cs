@@ -1,32 +1,47 @@
 using Microsoft.AspNetCore.WebUtilities;
 
-var builder = WebApplication.CreateBuilder(args);
-var app = builder.Build();
+namespace Calculator
+{ 
+    class Program 
+    {
+        static void Main()
+        {
+            var builder = WebApplication.CreateBuilder();
+            var app = builder.Build();
 
-app.MapGet("/", async (HttpContext ctx) => 
-{
-    ctx.Response.Headers.ContentType = "text/plain";
-    try { 
-        var queryStrings =  QueryHelpers.ParseQuery(ctx.Request.QueryString.Value);
+            app.MapGet("/", async (HttpContext ctx) => 
+            {
+                try { 
+                    var queryStrings = QueryHelpers.ParseQuery(ctx.Request.QueryString.Value);
 
-        string operatorInput = queryStrings["operator"][0] ?? "";
-        string firstNumberInput = queryStrings["firstNumber"][0] ?? "";
-        string secondNumberInput = queryStrings["secondNumber"][0] ?? "";
-                
-        int firstNumber = int.Parse(firstNumberInput);
-        int secondNumber = int.Parse(secondNumberInput);
+                    IFactory Factory = new Factory();
+                    IGetInput InputGetter = Factory.MakeInputGetter();
 
-        Operator operator_ = OperatorFactory.makeOperator(operatorInput);
-        int output = operator_.Operate(firstNumber, secondNumber);
+                    string operatorInput = InputGetter.Get(queryStrings, "operator");
+                    string firstNumberInput = InputGetter.Get(queryStrings, "firstNumber");
+                    string secondNumberInput = InputGetter.Get(queryStrings, "secondNumber");
+                            
+                    int firstNumber = int.Parse(firstNumberInput);
+                    int secondNumber = int.Parse(secondNumberInput);
 
-        ctx.Response.StatusCode = 200;
+                    IOperator Operator = Factory.MakeOperator(operatorInput);
 
-        await ctx.Response.WriteAsync(output.ToString());
-        await ctx.Response.WriteAsync("\n");
-    } catch (Exception e) { 
-        ctx.Response.StatusCode = 400;
-        await ctx.Response.WriteAsync(e.Message);
-    }   
-});
+                    int output = Operator.Operate(firstNumber, secondNumber);
 
-app.Run();
+                    ctx.Response.StatusCode = 200;
+                    ctx.Response.Headers.ContentType = "text/plain";
+
+                    string response = string.Format($"The result of calculation is {output}");
+                    await ctx.Response.WriteAsync(response);
+                    await ctx.Response.WriteAsync("\n");
+                } catch (Exception e) { 
+                    ctx.Response.StatusCode = 400;
+                    await ctx.Response.WriteAsync(e.Message);
+                }   
+            });
+
+            app.Run();
+        }
+    }
+}
+
