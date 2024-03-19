@@ -2,7 +2,8 @@ namespace Calculator
 { 
     public class Factory : IFactory
     { 
-        public IOperator MakeOperator(string operatorInput) {
+        public IOperator MakeOperator(string operatorInput) 
+        {
             return operatorInput switch
             {
                 "add" => new AddOperator(),
@@ -13,7 +14,8 @@ namespace Calculator
             };
         }
 
-        public IGetInput MakeInputGetter() {
+        public IGetInput MakeInputGetter() 
+        {
             return new GetQueryString();
         }
     }
